@@ -1,0 +1,112 @@
+tracking-system/
+├── README.md
+├── .gitignore
+├── docker-compose.yml                    # Run entire system
+│
+├── services/                             # Backend microservices
+│   ├── gateway-service/
+│   │   ├── Dockerfile
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   ├── .env.example
+│   │   └── src/
+│   │       ├── index.ts                  # Main entry point
+│   │       ├── routes/
+│   │       │   ├── telemetry.routes.ts   # POST /api/telemetry
+│   │       │   ├── tracker.routes.ts     # GET /api/trackers
+│   │       │   └── device.routes.ts      # Device management
+│   │       ├── kafka/
+│   │       │   └── producer.ts           # Kafka producer setup
+│   │       ├── middleware/
+│   │       │   ├── auth.ts
+│   │       │   └── validator.ts
+│   │       └── types/
+│   │           └── telemetry.types.ts
+│   │
+│   ├── location-service/
+│   │   ├── Dockerfile
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── src/
+│   │       ├── index.ts                  # Kafka consumer
+│   │       ├── consumer.ts               # Listen to tracker-telemetry
+│   │       ├── database/
+│   │       │   └── db.ts                 # Database connection
+│   │       └── handlers/
+│   │           └── telemetry.handler.ts  # Process GPS data
+│   │
+│   ├── alert-service/
+│   │   ├── Dockerfile
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── src/
+│   │       ├── index.ts
+│   │       ├── consumer.ts               # Listen to tracker-telemetry
+│   │       ├── geofence/
+│   │       │   └── checker.ts            # Check if in/out of zones
+│   │       └── notifications/
+│   │           ├── email.ts
+│   │           └── sms.ts
+│   │
+│   ├── analytics-service/
+│   │   ├── Dockerfile
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── src/
+│   │       ├── index.ts
+│   │       ├── consumer.ts               # Listen to tracker-telemetry
+│   │       └── metrics/
+│   │           ├── distance.ts           # Calculate distances
+│   │           └── speed.ts              # Calculate avg speed
+│   │
+│   └── logging-service/
+│       ├── Dockerfile
+│       ├── package.json
+│       ├── tsconfig.json
+│       └── src/
+│           ├── index.ts
+│           └── consumer.ts               # Listen to system-logs
+│
+├── simulator/                            # IoT device simulator
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── src/
+│       ├── index.ts                      # Start multiple simulators
+│       ├── tracker-simulator.ts          # Single tracker logic
+│       └── scenarios/
+│           ├── city-route.ts             # Simulate city driving
+│           └── random-movement.ts        # Random GPS movement
+│
+├── frontend/                             # React dashboard
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── vite.config.ts
+│   └── src/
+│       ├── App.tsx
+│       ├── main.tsx
+│       ├── components/
+│       │   ├── Map.tsx                   # Display tracker locations
+│       │   ├── TrackerList.tsx           # List all trackers
+│       │   ├── TrackerDetail.tsx         # Individual tracker view
+│       │   └── Analytics.tsx             # Charts/stats
+│       ├── hooks/
+│       │   └── useTrackers.ts            # Fetch tracker data
+│       ├── api/
+│       │   └── client.ts                 # Axios instance
+│       └── types/
+│           └── tracker.types.ts
+│
+├── shared/                               # Shared code (optional)
+│   ├── types/
+│   │   └── telemetry.types.ts           # Shared TypeScript types
+│   └── utils/
+│       └── validation.ts
+│
+└── infrastructure/                       # DevOps stuff
+    ├── kubernetes/                       # K8s manifests (production)
+    │   ├── gateway-deployment.yaml
+    │   ├── kafka-deployment.yaml
+    │   └── services.yaml
+    └── scripts/
+        ├── setup-local.sh                # Local dev setup
+        └── seed-data.sh                  # Add test data
