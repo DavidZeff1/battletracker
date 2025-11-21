@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "kafkajs": "^2.2.4",
+    "tsx": "^4.20.6"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts"
+  }
+}
