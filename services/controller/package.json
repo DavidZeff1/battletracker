@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "@types/express": "^5.0.5",
+    "express": "^5.1.0",
+    "swagger-autogen": "^2.23.7",
+    "swagger-ui-express": "^5.0.1",
+    "tsx": "^4.20.6"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts"
+  }
+}
