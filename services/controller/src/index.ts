@@ -17,7 +17,7 @@ app.post("/api/locations", async (req, res) => {
 
   try {
     await producer.send({
-      topic: "test-topic",
+      topic: "locations",
       messages: [
         {
           key: `location-${Date.now()}`,
@@ -45,6 +45,7 @@ app.post("/api/locations", async (req, res) => {
 
 async function startServer() {
   try {
+    await new Promise((resolve) => setTimeout(resolve, 3000));
     await producer.connect();
 
     app.listen(3001, () => {

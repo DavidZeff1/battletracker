@@ -1,14 +1,18 @@
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - "2181:2181"
+    networks:
+      - kafka-network
 
   broker:
     image: confluentinc/cp-kafka:7.5.0
+    container_name: broker
     depends_on:
       - zookeeper
     ports:
@@ -21,3 +25,83 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    networks:
+      - kafka-network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "kafka-broker-api-versions --bootstrap-server localhost:9092 || exit 1",
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    depends_on:
+      - broker
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: broker:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - kafka-network
+
+  kafka-admin:
+    build:
+      context: ./kafka-admin
+    container_name: kafka-admin
+    depends_on:
+      broker:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER: broker:29092
+      NODE_ENV: production
+    networks:
+      - kafka-network
+    command: npm run start
+
+  controller:
+    build:
+      context: ./services/controller
+    container_name: controller
+    depends_on:
+      broker:
+        condition: service_healthy
+      kafka-admin:
+        condition: service_completed_successfully
+    environment:
+      KAFKA_BROKER: broker:29092
+      NODE_ENV: production
+    ports:
+      - "3001:3001"
+    networks:
+      - kafka-network
+    restart: on-failure
+
+  location-service:
+    build:
+      context: ./services/location-service
+    container_name: location-service
+    depends_on:
+      broker:
+        condition: service_healthy
+      kafka-admin:
+        condition: service_completed_successfully
+    environment:
+      KAFKA_BROKER: broker:29092
+      NODE_ENV: production
+    ports:
+      - "3002:3002"
+    networks:
+      - kafka-network
+    restart: on-failure
+
+networks:
+  kafka-network:
+    driver: bridge
