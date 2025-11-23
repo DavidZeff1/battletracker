@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "kafkajs": "^2.2.4",
+    "tsx": "^4.20.6"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "kafka": "docker-compose up -d",
+    "kafka-logs": "docker-compose logs -f",
+    "kafka-exit": "docker-compose down"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1"
+  }
+}

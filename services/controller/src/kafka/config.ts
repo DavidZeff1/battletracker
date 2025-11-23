@@ -1,7 +1,7 @@
 import { Kafka, logLevel } from "kafkajs";
 
 const kafka = new Kafka({
-  clientId: "user-service",
+  clientId: "controller-service",
   brokers: [process.env.KAFKA_BROKER || "localhost:9092"],
   logLevel: logLevel.INFO,
   retry: {

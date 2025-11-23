@@ -1,17 +1,69 @@
 import express from "express";
+import kafka from "../src/kafka/config";
+
+const producer = kafka.producer();
 
 const app = express();
+
 app.use(express.json());
+
 app.get("/health", (req, res) => {
   res.send({ health: "up" });
 });
 
-app.post("/api/locations", (req, res) => {
+app.post("/api/locations", async (req, res) => {
   const location = req.body.location;
   console.log(location.lat, location.lng);
-  res.send(req.body);
+
+  try {
+    await producer.send({
+      topic: "test-topic",
+      messages: [
+        {
+          key: `location-${Date.now()}`,
+          value: JSON.stringify({
+            location,
+            timestamp: new Date().toISOString(),
+          }),
+        },
+      ],
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Location sent to Kafka",
+      location,
+    });
+  } catch (error) {
+    console.error("Failed to send to Kafka:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to send location to Kafka",
+    });
+  }
 });
 
-app.listen(3001, () => {
-  console.log(`listening on 3001`);
+async function startServer() {
+  try {
+    await producer.connect();
+
+    app.listen(3001, () => {
+      console.log(`server listening on port 3001`);
+    });
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+}
+
+process.on("SIGINT", async () => {
+  await producer.disconnect();
+  process.exit(0);
 });
+
+process.on("SIGTERM", async () => {
+  await producer.disconnect();
+  process.exit(0);
+});
+
+startServer();
