@@ -12,27 +12,21 @@ app.get("/health", (req, res) => {
 });
 
 app.post("/api/locations", async (req, res) => {
-  const location = req.body.location;
-  console.log(location.lat, location.lng);
-
+  const body = req.body;
+  console.log(body);
   try {
     await producer.send({
       topic: "locations",
       messages: [
         {
           key: `location-${Date.now()}`,
-          value: JSON.stringify({
-            location,
-            timestamp: new Date().toISOString(),
-          }),
+          value: JSON.stringify(body),
         },
       ],
     });
-
     res.status(200).json({
       success: true,
       message: "Location sent to Kafka",
-      location,
     });
   } catch (error) {
     console.error("Failed to send to Kafka:", error);

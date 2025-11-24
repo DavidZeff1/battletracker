@@ -19,10 +19,25 @@ class Tracker {
       await fetch("http://localhost:3001/api/locations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(this.location),
+        body: JSON.stringify({
+          id: this.id,
+          type: this.type,
+          location: this.location,
+          status: this.status,
+          timestamp: new Date().toISOString(),
+        }),
       });
+      console.log(
+        JSON.stringify({
+          id: this.id,
+          type: this.type,
+          location: this.location,
+          status: this.status,
+          timestamp: new Date().toISOString(),
+        })
+      );
       this.location.lat -= 0.001;
-      this.location.lat += 0.001;
+      this.location.lng += 0.001;
       await delay(1000);
     }
   }
@@ -34,6 +49,6 @@ async function delay(time: number): Promise<void> {
   });
 }
 
-const trakcer1 = new Tracker("1", "soldier", "operational");
+const trakcer1 = new Tracker("Alpha-1", "soldier", "operational");
 
 trakcer1.pingLocation();
