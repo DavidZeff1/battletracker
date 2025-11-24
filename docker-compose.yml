@@ -102,6 +102,21 @@ services:
       - kafka-network
     restart: on-failure
 
+  tracker-service:
+    build:
+      context: ./services/tracker-service
+    container_name: tracker-service
+    depends_on:
+      - controller
+    environment:
+      CONTROLLER_URL: http://controller:3001
+      NODE_ENV: production
+    ports:
+      - "3003:3003"
+    networks:
+      - kafka-network
+    restart: on-failure
+
 networks:
   kafka-network:
     driver: bridge
