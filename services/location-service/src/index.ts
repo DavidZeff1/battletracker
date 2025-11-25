@@ -3,12 +3,11 @@ import cors from "cors";
 import kafka from "./kafka/config";
 
 const app = express();
-app.use(cors()); // Allow frontend to access this API
+app.use(cors());
 
 const consumer = kafka.consumer({ groupId: "location-consumers" });
 
-// Store latest location for each unit (keyed by unit ID)
-const latestLocations = new Map<string, any>();
+const latestLocations = new Array<{}>();
 
 async function startConsumer() {
   try {
@@ -16,7 +15,7 @@ async function startConsumer() {
     await consumer.connect();
     console.log("✅ Kafka consumer connected");
 
-    await consumer.subscribe({ topic: "locations", fromBeginning: false }); // Only new messages
+    await consumer.subscribe({ topic: "locations", fromBeginning: false });
 
     await consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
@@ -25,13 +24,12 @@ async function startConsumer() {
           const data = JSON.parse(value);
           console.log("📍 Received location update:", data.id, data.location);
 
-          // Store/update latest location for this unit
-          latestLocations.set(data.id, data);
+          latestLocations.push(data);
         }
       },
     });
   } catch (error) {
-    console.error("❌ Consumer error:", error);
+    console.error(error);
     process.exit(1);
   }
 }
@@ -41,23 +39,22 @@ app.get("/health", (req, res) => {
 });
 
 // Get all latest locations (ensure unique by id)
-app.get("/api/locations", (req, res) => {
-  const locations = Array.from(latestLocations.values());
-  // Remove any duplicates just in case
-  const uniqueLocations = locations.filter(
-    (loc, index, self) => index === self.findIndex((t) => t.id === loc.id)
-  );
-  res.json(uniqueLocations);
-});
+app.get("/api/stream/locations", (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*"); // or 'http://localhost:3000'
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
 
-// Get specific unit location
-app.get("/api/locations/:id", (req, res) => {
-  const location = latestLocations.get(req.params.id);
-  if (location) {
-    res.json(location);
-  } else {
-    res.status(404).json({ error: "Unit not found" });
-  }
+  const interval = setInterval(() => {
+    while (latestLocations.length > 0) {
+      res.write(`data: ${JSON.stringify(latestLocations.pop())}\n\n`);
+    }
+  }, 1000);
+
+  req.on("close", () => {
+    clearInterval(interval);
+  });
 });
 
 async function startServer() {
