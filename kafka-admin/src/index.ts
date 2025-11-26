@@ -34,6 +34,23 @@ async function initKafka() {
         ],
       });
     }
+
+    if (existingTopics.includes("enemy-spotted")) {
+      console.log("⏭️  Topic 'enemy-spotted' already exists");
+    } else {
+      console.log("🔨 Creating topic 'enemy-spotted'...");
+      await admin.createTopics({
+        validateOnly: false,
+        waitForLeaders: true,
+        topics: [
+          {
+            topic: "enemy-spotted",
+            numPartitions: 1,
+            replicationFactor: 1,
+          },
+        ],
+      });
+    }
     const updatedTopics = await admin.listTopics();
     console.log("📋 All topics:", updatedTopics);
 

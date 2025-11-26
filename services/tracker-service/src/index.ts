@@ -92,6 +92,63 @@ class Tracker {
 
     console.log(`🏁 ${this.id} finished pinging`);
   }
+
+  async PingForAssistance() {
+    try {
+      const response = await fetch(`${CONTROLLER_URL}/assistance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: this.id,
+          type: this.type,
+          location: this.location,
+          status: this.status,
+          timestamp: new Date().toISOString(),
+        }),
+      });
+
+      if (response.ok) {
+        console.log();
+      } else {
+        console.error(`❌ ${this.id} ping failed:`, response.statusText);
+      }
+    } catch (error) {
+      console.error(`❌ ${this.id} ping error:`, error);
+    }
+  }
+
+  async PingEnemySpotted(
+    enemyType: string,
+    enemyLocation: { lat: number; lng: number }
+  ) {
+    try {
+      const response = await fetch(`${CONTROLLER_URL}/enemySpotted`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: {
+            id: this.id,
+            type: this.type,
+            location: this.location,
+            status: this.status,
+          },
+          enemy: {
+            type: enemyType,
+            location: enemyLocation,
+          },
+          timestamp: new Date().toISOString(),
+        }),
+      });
+
+      if (response.ok) {
+        console.log();
+      } else {
+        console.error(`❌ ${this.id} ping failed:`, response.statusText);
+      }
+    } catch (error) {
+      console.error(`❌ ${this.id} ping error:`, error);
+    }
+  }
 }
 
 async function delay(time: number): Promise<void> {

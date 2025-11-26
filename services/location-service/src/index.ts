@@ -40,7 +40,7 @@ app.get("/health", (req, res) => {
 
 // Get all latest locations (ensure unique by id)
 app.get("/api/stream/locations", (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*"); // or 'http://localhost:3000'
+  res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");

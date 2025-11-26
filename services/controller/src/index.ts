@@ -1,5 +1,7 @@
 import express from "express";
 import kafka from "../src/kafka/config";
+import locations from "./api/locations";
+import enemySpotted from "./api/enemySpotted";
 
 const producer = kafka.producer();
 
@@ -11,30 +13,12 @@ app.get("/health", (req, res) => {
   res.send({ health: "up" });
 });
 
-app.post("/api/locations", async (req, res) => {
-  const body = req.body;
-  console.log(body);
-  try {
-    await producer.send({
-      topic: "locations",
-      messages: [
-        {
-          key: `location-${Date.now()}`,
-          value: JSON.stringify(body),
-        },
-      ],
-    });
-    res.status(200).json({
-      success: true,
-      message: "Location sent to Kafka",
-    });
-  } catch (error) {
-    console.error("Failed to send to Kafka:", error);
-    res.status(500).json({
-      success: false,
-      error: "Failed to send location to Kafka",
-    });
-  }
+app.post("/api/locations", (req, res) => {
+  locations(req, res, producer);
+});
+
+app.post("/enemySpotted", (req, res) => {
+  enemySpotted(req, res, producer);
 });
 
 async function startServer() {
