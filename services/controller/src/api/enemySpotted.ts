@@ -1,4 +1,3 @@
-// ./api/locations.ts
 import { Request, Response } from "express";
 import { Producer } from "kafkajs";
 
@@ -8,14 +7,12 @@ export default async function enemySpotted(
   producer: Producer
 ) {
   const body = req.body;
-  console.log(body);
-
   try {
     await producer.send({
-      topic: "locations",
+      topic: "enemy-spotted",
       messages: [
         {
-          key: `location-${Date.now()}`,
+          key: `enemy-spotted-${Date.now()}`,
           value: JSON.stringify(body),
         },
       ],
@@ -23,13 +20,13 @@ export default async function enemySpotted(
 
     res.status(200).json({
       success: true,
-      message: "Location sent to Kafka",
+      message: "enemy-spotted sent to Kafka",
     });
   } catch (error) {
     console.error("Failed to send to Kafka:", error);
     res.status(500).json({
       success: false,
-      error: "Failed to send location to Kafka",
+      error: "Failed to send enemy-spotted to Kafka",
     });
   }
 }

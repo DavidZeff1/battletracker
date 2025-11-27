@@ -102,6 +102,24 @@ services:
       - kafka-network
     restart: on-failure
 
+  enemy-spotted-service:
+    build:
+      context: ./services/enemy-spotted-service
+    container_name: enemy-spotted-service
+    depends_on:
+      broker:
+        condition: service_healthy
+      kafka-admin:
+        condition: service_completed_successfully
+    environment:
+      KAFKA_BROKER: broker:29092
+      NODE_ENV: production
+    ports:
+      - "3005:3005"
+    networks:
+      - kafka-network
+    restart: on-failure
+
   tracker-service:
     build:
       context: ./services/tracker-service

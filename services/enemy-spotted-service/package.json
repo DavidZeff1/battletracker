@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "kafkajs": "^2.2.4",
+    "tsx": "^4.20.6"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.5"
+  }
+}
