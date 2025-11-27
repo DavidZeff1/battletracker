@@ -84,7 +84,7 @@ export default class Tracker {
       }
 
       this.changeLocation(direction);
-      await delay(2000);
+      await delay(4000);
     }
 
     console.log(`🏁 ${this.id} finished pinging`);

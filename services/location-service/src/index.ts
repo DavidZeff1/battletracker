@@ -58,13 +58,8 @@ app.get("/api/stream/locations", (req, res) => {
 });
 
 async function startServer() {
-  // Wait for Kafka to be ready
   await new Promise((resolve) => setTimeout(resolve, 5000));
-
-  // Start consumer first
   await startConsumer();
-
-  // Then start HTTP server
   app.listen(3002, () => {
     console.log("🚀 Location service listening on port 3002");
   });

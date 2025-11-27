@@ -12,7 +12,7 @@ export default async function locations(
 
   try {
     await producer.send({
-      topic: "enemy-spotted",
+      topic: "locations",
       messages: [
         {
           key: `location-${Date.now()}`,
