@@ -1,16 +1,24 @@
+// services/tracker-service/src/types/Tracker.ts
+import {
+  Unit,
+  AssistanceRequest,
+  EnemySpotting,
+} from "../../../../shared/src/types";
 import delay from "../utilities/delay";
+
 const BASE_URL = process.env.CONTROLLER_URL || "http://localhost:3001";
+
 export default class Tracker {
   id: string;
-  type: string;
-  status: string;
+  type: "soldier" | "tank" | "drone";
+  status: "operational" | "damaged" | "destroyed";
   location: { lat: number; lng: number };
   ONE_STEP: number;
 
   constructor(
     id: string,
-    type: string,
-    status: string,
+    type: "soldier" | "tank" | "drone",
+    status: "operational" | "damaged" | "destroyed",
     startLat: number,
     startLng: number
   ) {
@@ -19,6 +27,16 @@ export default class Tracker {
     this.status = status;
     this.location = { lat: startLat, lng: startLng };
     this.ONE_STEP = 0.0001;
+  }
+
+  // Convert to shared Unit interface for API communication
+  toUnit(): Unit {
+    return {
+      id: this.id,
+      type: this.type,
+      status: this.status,
+      location: this.location,
+    };
   }
 
   changeLocation(direction: string) {
@@ -59,16 +77,12 @@ export default class Tracker {
 
     for (let i = 0; i < iterations; i++) {
       try {
+        const unitData: Unit = this.toUnit();
+
         const response = await fetch(`${BASE_URL}/api/locations`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: this.id,
-            type: this.type,
-            location: this.location,
-            status: this.status,
-            timestamp: new Date().toISOString(),
-          }),
+          body: JSON.stringify(unitData),
         });
 
         if (response.ok) {
@@ -92,20 +106,22 @@ export default class Tracker {
 
   async PingForAssistance() {
     try {
+      const assistanceRequest: AssistanceRequest = {
+        id: this.id,
+        type: this.type,
+        location: this.location,
+        status: this.status,
+        timestamp: new Date().toISOString(),
+      };
+
       const response = await fetch(`${BASE_URL}/assistance`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: this.id,
-          type: this.type,
-          location: this.location,
-          status: this.status,
-          timestamp: new Date().toISOString(),
-        }),
+        body: JSON.stringify(assistanceRequest),
       });
 
       if (response.ok) {
-        console.log();
+        console.log(`✅ ${this.id} assistance request sent`);
       } else {
         console.error(`❌ ${this.id} ping failed:`, response.statusText);
       }
@@ -119,26 +135,30 @@ export default class Tracker {
     enemyLocation: { lat: number; lng: number }
   ) {
     try {
+      const report: EnemySpotting = {
+        from: {
+          id: this.id,
+          type: this.type,
+          location: this.location,
+          status: this.status,
+        },
+        enemy: {
+          type: enemyType,
+          location: enemyLocation,
+        },
+        timestamp: new Date().toISOString(),
+      };
+
       const response = await fetch(`${BASE_URL}/enemySpotted`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          from: {
-            id: this.id,
-            type: this.type,
-            location: this.location,
-            status: this.status,
-          },
-          enemy: {
-            type: enemyType,
-            location: enemyLocation,
-          },
-          timestamp: new Date().toISOString(),
-        }),
+        body: JSON.stringify(report),
       });
+
       await delay(5000);
+
       if (response.ok) {
-        console.log();
+        console.log(`✅ ${this.id} enemy spotted report sent`);
       } else {
         console.error(`❌ ${this.id} ping failed:`, response.statusText);
       }

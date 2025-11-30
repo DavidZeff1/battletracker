@@ -83,6 +83,9 @@ services:
     networks:
       - kafka-network
     restart: on-failure
+    volumes:
+      - ./services/controller:/app
+      - ./shared:/shared:ro
 
   location-service:
     build:
@@ -101,6 +104,9 @@ services:
     networks:
       - kafka-network
     restart: on-failure
+    volumes:
+      - ./services/location-service:/app
+      - ./shared:/shared:ro
 
   enemy-spotted-service:
     build:
@@ -119,6 +125,9 @@ services:
     networks:
       - kafka-network
     restart: on-failure
+    volumes:
+      - ./services/enemy-spotted-service:/app
+      - ./shared:/shared:ro
 
   tracker-service:
     build:
@@ -134,6 +143,28 @@ services:
     networks:
       - kafka-network
     restart: on-failure
+    volumes:
+      - ./services/tracker-service:/app
+      - ./shared:/shared:ro
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    depends_on:
+      - controller
+    environment:
+      CONTROLLER_URL: http://controller:3001
+      NODE_ENV: development
+    ports:
+      - "1234:1234"
+    networks:
+      - kafka-network
+    volumes:
+      - ./frontend:/app
+      - ./shared:/shared:ro
+      - /app/node_modules
+      - /app/.parcel-cache # Cache Parcel builds
 
 networks:
   kafka-network:

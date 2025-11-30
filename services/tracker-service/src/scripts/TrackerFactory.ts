@@ -1,5 +1,5 @@
 import Tracker from "../types/Tracker";
-export default function (
+export default function TrackerFactory(
   numOfSoldier: number,
   numOfTanks: number,
   numOfDrones: number,
