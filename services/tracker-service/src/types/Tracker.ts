@@ -129,6 +129,64 @@ export default class Tracker {
       console.error(`❌ ${this.id} ping error:`, error);
     }
   }
+  async pingLocationWithEnemySpotting(
+    direction: string = "n",
+    iterations: number = 10,
+    enemySpottingChance: number = 0.15 // 15% chance per iteration
+  ) {
+    console.log(`🚀 Starting pings for ${this.id}, moving ${direction}`);
+
+    for (let i = 0; i < iterations; i++) {
+      try {
+        // Send location update
+        const unitData: Unit = this.toUnit();
+
+        const response = await fetch(`${BASE_URL}/api/locations`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(unitData),
+        });
+
+        if (response.ok) {
+          console.log(
+            `✅ ${this.id} ping ${i + 1}/${iterations}:`,
+            this.location
+          );
+        } else {
+          console.error(`❌ ${this.id} ping failed:`, response.statusText);
+        }
+
+        // Random enemy spotting
+        if (Math.random() < enemySpottingChance) {
+          await this.spotRandomEnemy();
+        }
+      } catch (error) {
+        console.error(`❌ ${this.id} ping error:`, error);
+      }
+
+      this.changeLocation(direction);
+      await delay(4000);
+    }
+
+    console.log(`🏁 ${this.id} finished pinging`);
+  }
+
+  // Add helper method for random enemy generation
+  private spotRandomEnemy() {
+    const enemyTypes = ["soldier", "tank", "drone"];
+    const randomType =
+      enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+
+    // Generate enemy location near the tracker (within 0.005 degrees ~ 500m)
+    const enemyLocation = {
+      lat: this.location.lat + (Math.random() - 0.5) * 0.005,
+      lng: this.location.lng + (Math.random() - 0.5) * 0.005,
+    };
+
+    console.log(`👁️ ${this.id} spotted enemy ${randomType} at`, enemyLocation);
+
+    return this.PingEnemySpotted(randomType, enemyLocation);
+  }
 
   async PingEnemySpotted(
     enemyType: string,

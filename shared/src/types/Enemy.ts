@@ -1,7 +1,11 @@
+// shared/src/types/Enemy.ts
 export interface Enemy {
-  id: string; // We'll generate this
+  id: string;
   type: string;
-  location: { lat: number; lng: number };
+  location: {
+    lat: number;
+    lng: number;
+  };
   timestamp: string;
-  spottedBy: string; // ID of the unit that spotted it
+  spottedBy: string;
 }

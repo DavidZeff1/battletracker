@@ -1,8 +1,6 @@
+// services/tracker-service/src/index.ts
 import express from "express";
-import Tracker from "./types/Tracker";
 import delay from "./utilities/delay";
-import ContinousUnitMovementScript from "./scripts/ContinousUnitMovementScript";
-import ContinousEnemyspottedScript from "./scripts/ContinousEnemySpottedScript";
 import TrackerFactory from "./scripts/TrackerFactory";
 
 const app = express();
@@ -22,10 +20,23 @@ async function startTrackerService() {
   app.listen(3003, () => {
     console.log("🚀 Tracker service listening on port 3003");
   });
+
   while (true) {
-    await Promise.all(trackers.map((tracker) => tracker.pingLocation("w", 30)));
+    // Move west with 15% chance of spotting enemies
+    await Promise.all(
+      trackers.map((tracker) =>
+        tracker.pingLocationWithEnemySpotting("w", 30, 0.15)
+      )
+    );
+
     await delay(5000);
-    await Promise.all(trackers.map((tracker) => tracker.pingLocation("e", 30)));
+
+    // Move east with 15% chance of spotting enemies
+    await Promise.all(
+      trackers.map((tracker) =>
+        tracker.pingLocationWithEnemySpotting("e", 30, 0.15)
+      )
+    );
   }
 }
 

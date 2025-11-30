@@ -30,7 +30,6 @@ async function startConsumer() {
   }
 }
 
-// location-service index.ts
 app.get("/api/stream/enemy-spotted", (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Credentials", "true");
